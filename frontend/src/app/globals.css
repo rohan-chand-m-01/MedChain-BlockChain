@@ -1,0 +1,281 @@
+/* Editorial Clinical Precision Design System */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Inter:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Editorial Design System */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Inter:wght@400;500;700&display=swap');
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, .editorial {
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Landing Page Backgrounds */
+.bg-mesh {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-grid {
+  position: relative;
+  background-color: #ffffff;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+:root {
+  /* Editorial Color Palette */
+  --on-error: #ffffff;
+  --on-secondary: #ffffff;
+  --primary-dim: #125c63;
+  --inverse-on-surface: #eff1f3;
+  --on-surface: #191c1e;
+  --error-dim: #67040d;
+  --on-tertiary-fixed-variant: #005236;
+  --on-secondary-fixed: #131b2e;
+  --background: #f7f9fb;
+  --secondary: #565e74;
+  --surface-dim: #d8dadc;
+  --surface-container-high: #e6e8ea;
+  --surface-container-low: #f2f4f6;
+  --primary-fixed-dim: #b4c5ff;
+  --outline-variant: #c3c6d7;
+  --on-primary-fixed-variant: #003ea8;
+  --surface-bright: #f7f9fb;
+  --surface-container-highest: #e0e3e5;
+  --surface: #f7f9fb;
+  --primary-container: #2563eb;
+  --on-tertiary: #ffffff;
+  --on-background: #191c1e;
+  --error-container: #ffdad6;
+  --inverse-primary: #b4c5ff;
+  --on-primary-container: #eeefff;
+  --tertiary: #006242;
+  --tertiary-container: #007d55;
+  --on-secondary-container: #5c647a;
+  --tertiary-fixed-dim: #4edea3;
+  --on-error-container: #93000a;
+  --on-surface-variant: #434655;
+  --secondary-dim: #4d39c7;
+  --secondary-container: #dae2fd;
+  --outline: #737686;
+  --secondary-fixed-dim: #bec6e0;
+  --surface-container: #eceef0;
+  --inverse-surface: #2d3133;
+  --primary: #004ac6;
+  --on-primary: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --tertiary-fixed: #6ffbbe;
+  --on-tertiary-fixed: #002113;
+  --tertiary-dim: #345674;
+  --surface-variant: #e0e3e5;
+  --surface-tint: #0053db;
+  --primary-fixed: #dbe1ff;
+  --secondary-fixed: #dae2fd;
+  --on-secondary-fixed-variant: #3f465c;
+  --error: #ba1a1a;
+  --on-tertiary-container: #bdffdb;
+  --on-primary-fixed: #00174b;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+  color: var(--on-surface);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--surface-container-low);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+/* Editorial Card Styles */
+.editorial-card {
+  background: var(--surface-container-lowest);
+  border-radius: 1rem;
+  box-shadow: 0 12px 32px -4px rgba(44, 52, 52, 0.06);
+  transition: all 0.2s ease;
+}
+
+.editorial-card:hover {
+  box-shadow: 0 16px 40px -4px rgba(44, 52, 52, 0.08);
+}
+
+/* Button Styles */
+.btn-editorial-primary {
+  background: var(--primary-container);
+  color: var(--on-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  transition: all 0.2s ease;
+}
+
+.btn-editorial-primary:hover {
+  background: var(--primary-dim);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-editorial-secondary {
+  background: var(--surface-container-highest);
+  color: var(--primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.btn-editorial-secondary:hover {
+  background: var(--surface-container-high);
+}
+
+/* Badge Styles */
+.badge-editorial {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Input Styles */
+input.editorial-input,
+textarea.editorial-input,
+select.editorial-input {
+  width: 100%;
+  background: var(--surface-container-low);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--on-surface);
+  transition: all 0.2s ease;
+}
+
+input.editorial-input:focus,
+textarea.editorial-input:focus,
+select.editorial-input:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgba(37, 99, 235, 0.2);
+  background: var(--surface-container-lowest);
+}
+
+/* Animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Mesh Background */
+.bg-mesh {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(34, 211, 238, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(251, 191, 36, 0.05) 0px, transparent 50%);
+  pointer-events: none;
+}
