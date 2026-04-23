@@ -10,13 +10,23 @@ import json
 
 # Use existing services
 from services.nvidia_nim import get_nvidia_client
+from services.ollama_medgemma import get_ollama_client
 
 
 class MedicalInternAI:
     """AI Medical Intern - Smart assistant for doctors"""
-    
+
     def __init__(self):
-        self.nvidia_client = get_nvidia_client()
+        # Prefer local Ollama; fall back to NVIDIA NIM
+        ollama = get_ollama_client()
+        if ollama.is_available():
+            self.ai_client = ollama
+            self._client_name = "Ollama MedGemma 4B (Local)"
+        else:
+            self.ai_client = get_nvidia_client()
+            self._client_name = "NVIDIA NIM"
+        import logging
+        logging.getLogger(__name__).info(f"🤖 MedicalInternAI using: {self._client_name}")
     
     async def generate_patient_briefing(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -64,7 +74,7 @@ Generate a comprehensive briefing in JSON format with:
 Focus on actionable insights. Be concise but thorough."""
 
         try:
-            response = await self.nvidia_client.chat(prompt)
+            response = await self.ai_client.chat(prompt)
             
             # Parse JSON response
             response_text = response.strip()
@@ -163,7 +173,7 @@ Include specific values, dates, and trends when available.
 Be concise but thorough."""
 
         try:
-            response = await self.nvidia_client.chat(prompt)
+            response = await self.ai_client.chat(prompt)
             return response.strip()
         except Exception as e:
             return f"I apologize, but I encountered an error analyzing the patient records: {str(e)}"
@@ -189,7 +199,7 @@ Provide a structured treatment plan in JSON format with:
 Be evidence-based and practical."""
 
         try:
-            response = await self.nvidia_client.chat(prompt)
+            response = await self.ai_client.chat(prompt)
             
             # Parse JSON
             response_text = response.strip()
@@ -233,7 +243,7 @@ Extract and return JSON with:
 Be precise and focus on clinically significant information."""
 
         try:
-            response = await self.nvidia_client.chat(prompt)
+            response = await self.ai_client.chat(prompt)
             
             response_text = response.strip()
             if "```json" in response_text:

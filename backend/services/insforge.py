@@ -54,7 +54,12 @@ async def db_select(table: str, filters: dict = None, order: str = None, limit: 
     url = f"{INSFORGE_BASE_URL}/api/database/records/{table}"
     params = {"select": select}
     if filters:
-        params.update({f"{k}": f"eq.{v}" for k, v in filters.items()})
+        for k, v in filters.items():
+            # PostgREST requires lowercase booleans: eq.true / eq.false
+            if isinstance(v, bool):
+                params[k] = f"eq.{'true' if v else 'false'}"
+            else:
+                params[k] = f"eq.{v}"
     if order:
         params["order"] = order
     

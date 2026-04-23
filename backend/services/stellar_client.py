@@ -55,14 +55,24 @@ class StellarClient:
         return encrypted_secret
 
     async def store_proof_on_stellar(self, patient_public_key, ipfs_hash, risk_score, risk_level):
-        """Store medical record proof on Stellar - all data on gas wallet"""
+        """Store medical record proof on Stellar - all data on gas wallet.
+
+        Stellar data entry values are hard-capped at 64 bytes.
+        - ipfs_<8> key  -> first 30 chars of IPFS hash (enough to identify the record)
+        - risk_<8> key  -> "score:level"  e.g. "48:medium"  (always <= 15 bytes)
+        """
         if not self.gas_wallet:
             raise StellarNetworkError('Gas wallet not configured')
-        
+
         gas_account = self.server.load_account(self.gas_wallet.public_key)
         record_id = ipfs_hash[:8]
-        patient_id = patient_public_key[:16] if len(patient_public_key) > 16 else patient_public_key
-        
+
+        # Truncate IPFS hash to 30 chars — still uniquely identifies the record
+        ipfs_short = ipfs_hash[:30]
+
+        # Risk value: "score:level" — always <= 15 bytes
+        risk_value = f'{risk_score}:{risk_level}'
+
         transaction = (
             TransactionBuilder(
                 source_account=gas_account,
@@ -71,17 +81,17 @@ class StellarClient:
             )
             .append_manage_data_op(
                 data_name=f'ipfs_{record_id}',
-                data_value=f'{patient_id}:{ipfs_hash}'.encode()
+                data_value=ipfs_short.encode()
             )
             .append_manage_data_op(
                 data_name=f'risk_{record_id}',
-                data_value=f'{patient_id}:{risk_score}:{risk_level}'.encode()
+                data_value=risk_value.encode()
             )
             .add_text_memo(f'MEDICAL_RECORD:{record_id}')
             .set_timeout(30)
             .build()
         )
-        
+
         transaction.sign(self.gas_wallet)
         response = self.server.submit_transaction(transaction)
         return response['hash']

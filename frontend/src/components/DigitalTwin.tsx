@@ -200,25 +200,74 @@ export default function DigitalTwin({ analysisData, recordId }: DigitalTwinProps
             'Kidneys': []
         };
 
+        // Also scan the summary text for organ mentions
+        const summaryLower = actualSummary;
+
+        const matchesOrgan = (text: string, keywords: string[]) =>
+            keywords.some(kw => text.includes(kw));
+
         actualConditions.forEach((condition: string) => {
-            const condLower = condition.toLowerCase();
-            if (condLower.includes('brain') || condLower.includes('neuro') || condLower.includes('stroke')) {
+            const c = condition.toLowerCase();
+
+            // Brain / Neuro
+            if (matchesOrgan(c, ['brain', 'neuro', 'stroke', 'cerebral', 'cognitive', 'seizure', 'migraine', 'dementia', 'alzheimer', 'parkinson'])) {
                 organConditions['Brain'].push(condition);
             }
-            if (condLower.includes('lung') || condLower.includes('respiratory') || condLower.includes('asthma')) {
+            // Lungs / Respiratory — expanded to cover radiology findings
+            if (matchesOrgan(c, [
+                'lung', 'pulmonary', 'respiratory', 'asthma', 'bronch', 'pneumonia', 'pneumothorax',
+                'pleural', 'atelectasis', 'consolidation', 'opacity', 'infiltrate', 'effusion',
+                'copd', 'emphysema', 'fibrosis', 'mass', 'nodule', 'tuberculosis', 'tb',
+                'hemidiaphragm', 'mediastin', 'trachea', 'chest', 'sputum', 'cough', 'dyspnea',
+                'hypoxia', 'spo2', 'fev', 'fvc', 'airway', 'alveol'
+            ])) {
                 organConditions['Lungs'].push(condition);
             }
-            if (condLower.includes('heart') || condLower.includes('cardiac') || condLower.includes('cardio')) {
+            // Heart / Cardiac
+            if (matchesOrgan(c, [
+                'heart', 'cardiac', 'cardio', 'coronary', 'myocard', 'troponin', 'arrhythmia',
+                'atrial', 'ventricular', 'hypertension', 'blood pressure', 'cholesterol',
+                'ldl', 'hdl', 'triglyceride', 'bnp', 'ecg', 'ekg', 'angina', 'infarct'
+            ])) {
                 organConditions['Heart'].push(condition);
             }
-            if (condLower.includes('liver') || condLower.includes('hepatic')) {
+            // Liver / Hepatic
+            if (matchesOrgan(c, [
+                'liver', 'hepatic', 'hepatitis', 'cirrhosis', 'alt', 'ast', 'bilirubin',
+                'jaundice', 'fatty liver', 'ggt', 'albumin', 'portal'
+            ])) {
                 organConditions['Liver'].push(condition);
             }
-            if (condLower.includes('diabetes') || condLower.includes('glucose') || condLower.includes('digestive') || condLower.includes('stomach')) {
+            // Gut / Digestive / Metabolic
+            if (matchesOrgan(c, [
+                'diabetes', 'glucose', 'digestive', 'stomach', 'intestin', 'bowel', 'colon',
+                'gastro', 'pancrea', 'hba1c', 'insulin', 'metabolic', 'obesity', 'crohn',
+                'colitis', 'ibs', 'celiac', 'ulcer', 'reflux', 'gerd'
+            ])) {
                 organConditions['Gut'].push(condition);
             }
-            if (condLower.includes('kidney') || condLower.includes('renal')) {
+            // Kidneys / Renal
+            if (matchesOrgan(c, [
+                'kidney', 'renal', 'creatinine', 'gfr', 'bun', 'urea', 'proteinuria',
+                'nephro', 'urinary', 'bladder', 'uti', 'dialysis', 'electrolyte'
+            ])) {
                 organConditions['Kidneys'].push(condition);
+            }
+        });
+
+        // Also scan summary text for organ-specific mentions not captured in conditions list
+        const summaryOrganCheck: Record<string, string[]> = {
+            'Lungs': ['lung', 'pulmonary', 'pneumonia', 'atelectasis', 'consolidation', 'opacity',
+                      'pleural', 'bronch', 'chest x-ray', 'respiratory', 'hemidiaphragm', 'mediastin'],
+            'Heart': ['heart', 'cardiac', 'coronary', 'myocard', 'troponin', 'arrhythmia'],
+            'Brain': ['brain', 'neuro', 'stroke', 'cerebral'],
+            'Liver': ['liver', 'hepatic', 'hepatitis', 'alt', 'ast', 'bilirubin'],
+            'Gut':   ['diabetes', 'glucose', 'hba1c', 'pancrea', 'metabolic'],
+            'Kidneys': ['kidney', 'renal', 'creatinine', 'gfr'],
+        };
+        Object.entries(summaryOrganCheck).forEach(([organ, keywords]) => {
+            if (matchesOrgan(summaryLower, keywords) && organConditions[organ].length === 0) {
+                organConditions[organ].push(`Finding noted in ${organ.toLowerCase()} (from report summary)`);
             }
         });
 
@@ -231,22 +280,25 @@ export default function DigitalTwin({ analysisData, recordId }: DigitalTwinProps
             };
 
             if (conditions.length === 0) {
+                // Organ not directly implicated — give a low baseline score
+                // (slightly influenced by overall risk so it's not always the same)
+                const baselineScore = Math.max(5, Math.floor(actualRiskScore * 0.15));
                 return { 
                     ...base, 
                     status: 'safe', 
-                    score: Math.floor(Math.random() * 15) + 5, 
+                    score: baselineScore, 
                     details: 'No anomalies detected' 
                 };
             }
 
-            // Organ has conditions - use actual risk score
+            // Organ has conditions — use actual risk score and status
             return {
                 ...base,
                 status: overallStatus,
                 score: actualRiskScore,
-                details: conditions.join(', '),
-                aiInsights: [`Detected: ${conditions.join(', ')}`],
-                recommendations: [`Consult specialist for ${organName}`, 'Follow medical advice'],
+                details: conditions.filter(c => !c.startsWith('Finding noted')).join(', ') || conditions[0],
+                aiInsights: conditions.map(c => `Detected: ${c}`),
+                recommendations: [`Consult specialist for ${organName}`, 'Follow up based on report findings'],
             };
         };
 

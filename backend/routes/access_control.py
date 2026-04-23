@@ -12,7 +12,6 @@ from pydantic import BaseModel, validator
 import logging
 
 from services.insforge import db_insert, db_select, db_select_single, db_update
-from services.doctor_notifier import DoctorNotifier
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -25,58 +24,65 @@ async def _send_access_notification(
     access_hours: int,
     is_extension: bool = False
 ):
-    """
-    Send WhatsApp notification to doctor when patient grants access.
-    
-    Looks up doctor's phone number from profile and sends notification
-    with patient name, document details, and expiry time.
-    """
+    """Send WhatsApp alert directly via Twilio when a patient grants access."""
     try:
-        # Get doctor profile with phone number
-        doctor_profile = await db_select_single(
-            table="doctor_profiles",
-            filters={"wallet_address": doctor_wallet},
-            select="whatsapp_phone,name"
-        )
-        
-        if not doctor_profile or not doctor_profile.get("whatsapp_phone"):
-            logger.warning(f"Doctor {doctor_wallet} has no WhatsApp number configured")
+        import os
+        from twilio.rest import Client
+
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        auth_token  = os.getenv("TWILIO_AUTH_TOKEN")
+        from_number = os.getenv("TWILIO_WHATSAPP_NUMBER")
+
+        if not all([account_sid, auth_token, from_number]):
+            logger.warning("[NOTIFY] Twilio not configured — skipping WhatsApp")
             return
-        
-        # Get patient profile for name
-        patient_profile = await db_select_single(
-            table="patient_profiles",
-            filters={"patient_wallet": patient_wallet},
-            select="full_name"
-        )
-        patient_name = patient_profile.get("full_name", "Unknown Patient") if patient_profile else "Unknown Patient"
-        
-        # Get analysis details
-        analysis = await db_select_single(
-            table="analyses",
-            filters={"id": analysis_id},
-            select="file_name,risk_score,summary,specialist"
-        )
-        
-        if not analysis:
-            logger.warning(f"Analysis {analysis_id} not found")
-            return
-        
-        # Send WhatsApp notification
-        notifier = DoctorNotifier()
-        success = await notifier.notify_doctor_access(
-            doctor_phone=doctor_profile["whatsapp_phone"],
-            doctor_name=doctor_profile.get("name", "Doctor"),
-            patient_name=patient_name,
-            risk_score=analysis.get("risk_score", 0),
-            access_hours=access_hours,
-            record_id=analysis_id
-        )
-        
-        if success:
-            logger.info(f"✓ WhatsApp notification sent to doctor {doctor_wallet}")
+
+        # Get names from DB
+        doctor_profile = await db_select_single("doctor_profiles", {"wallet_address": doctor_wallet}, select="name")
+
+        # patient_profiles uses Ethereum wallet; analyses use Privy DID.
+        # Fetch all patient profiles and pick the most recently created one as fallback.
+        patient_profile = await db_select_single("patient_profiles", {"wallet_address": patient_wallet}, select="name")
+        if not patient_profile:
+            # Fallback: get the most recently updated patient profile
+            profiles = await db_select("patient_profiles", select="name,wallet_address", order="created_at.desc", limit=1)
+            patient_profile = profiles[0] if profiles else None
+
+        analysis = await db_select_single("analyses", {"id": analysis_id}, select="file_name,risk_score")
+
+        doctor_name  = doctor_profile.get("name", "Unknown Doctor")    if doctor_profile  else "Unknown Doctor"
+        patient_name = patient_profile.get("name", "Unknown Patient")  if patient_profile else "Unknown Patient"
+        file_name    = analysis.get("file_name", "Medical Report")    if analysis        else "Medical Report"
+        risk_score   = analysis.get("risk_score", 0)                  if analysis        else 0
+
+        duration = f"{access_hours} hour{'s' if access_hours != 1 else ''}" if access_hours < 24 else f"{access_hours // 24} day{'s' if access_hours // 24 > 1 else ''}"
+        display_file = file_name.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title() if file_name else "Medical Report"
+        action = "extended access to" if is_extension else "shared"
+
+        if risk_score >= 75:
+            risk_emoji = "🔴"
+        elif risk_score >= 50:
+            risk_emoji = "🟡"
         else:
-            logger.error(f"✗ Failed to send WhatsApp notification to doctor {doctor_wallet}")
+            risk_emoji = "🟢"
+
+        msg = (
+            f"🔔 *MediChain AI — Access Grant*\n\n"
+            f"*{patient_name}* {action} *{display_file}* with Dr. *{doctor_name}* for *{duration}*.\n\n"
+            f"{risk_emoji} Risk Score: {risk_score}/100\n\n"
+            f"_Powered by MediChain AI_"
+        )
+
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            from_=from_number,
+            body=msg,
+            to="whatsapp:+917003565215"
+        )
+        logger.info(f"[NOTIFY] ✅ WhatsApp sent — SID: {message.sid} | Status: {message.status}")
+
+    except Exception as e:
+        logger.error(f"[NOTIFY] WhatsApp failed: {e}")
             
     except Exception as e:
         logger.error(f"Error sending access notification: {e}")
@@ -126,8 +132,7 @@ async def create_simple_access_grant(req: SimpleGrantRequest):
             # Update existing grant
             grant_id = existing[0]["id"]
             await db_update("access_grants", grant_id, {
-                "expires_at": expires_at.isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
+                "expires_at": expires_at.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
             })
             
             # Send notification for extended access
@@ -149,14 +154,11 @@ async def create_simple_access_grant(req: SimpleGrantRequest):
         # Create new grant
         grant = await db_insert("access_grants", {
             "patient_wallet": req.patient_wallet,
-            "doctor_wallet": req.doctor_wallet,
-            "analysis_id": req.analysis_id,
-            "grant_type": "single_file",
-            "wrapped_encryption_key": "SIMPLIFIED_MODE",  # Placeholder
-            "key_wrapping_algorithm": "none",
-            "expires_at": expires_at.isoformat(),
-            "is_active": True,
-            "access_count": 0
+            "doctor_wallet":  req.doctor_wallet,
+            "analysis_id":    req.analysis_id,
+            "expires_at":     expires_at.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+            "is_active":      True,
+            "access_count":   0,
         })
         
         # Send WhatsApp notification to doctor

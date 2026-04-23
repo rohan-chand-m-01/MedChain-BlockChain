@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useContract } from '@/hooks/useContract';
-import { getAllDoctors, getAccessGrants, apiGrantAccess, apiRevokeAccess } from '@/lib/api';
+import { getAllDoctors, getAccessGrants, createSimpleAccessGrant, apiRevokeAccess } from '@/lib/api';
 
 interface AccessManagerProps {
     analysisId: string;
@@ -56,7 +56,9 @@ export default function AccessManager({ analysisId, recordId, patientWallet }: A
         try {
             const { grants } = await getAccessGrants(analysisId);
             if (grants) {
-                setGrantedDoctors(grants.map((d: any) => d.doctor_wallet));
+                // Deduplicate wallet addresses
+                const unique = [...new Set(grants.map((d: any) => d.doctor_wallet as string))];
+                setGrantedDoctors(unique);
             }
         } catch (err) {
             console.error('Failed to load access grants:', err);
@@ -125,20 +127,22 @@ export default function AccessManager({ analysisId, recordId, patientWallet }: A
                 }
             }
 
-            // Calculate expiration timestamp
-            const expiresAt = Date.now() + (durationHours * 60 * 60 * 1000);
-
             // Sync to DB regardless of blockchain outcome
             if (patientWallet) {
-                await apiGrantAccess({
+                await createSimpleAccessGrant({
                     patient_wallet: patientWallet,
                     doctor_wallet: selectedDoctor.wallet_address,
                     analysis_id: analysisId,
-                    expires_at: expiresAt,
+                    expires_in_hours: durationHours,
                 });
             }
 
-            setGrantedDoctors(prev => [...prev, selectedDoctor.wallet_address]);
+            // Deduplicate — only add if not already in list
+            setGrantedDoctors(prev =>
+                prev.includes(selectedDoctor.wallet_address)
+                    ? prev
+                    : [...prev, selectedDoctor.wallet_address]
+            );
 
             if (blockchainSuccess) {
                 setMessage({ type: 'success', text: `✅ Access granted to ${selectedDoctor.name} for ${durationHours}h (on-chain + database)` });
@@ -360,10 +364,10 @@ export default function AccessManager({ analysisId, recordId, patientWallet }: A
                 <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-5 mt-8">
                     <h4 className="font-bold tracking-widest uppercase border-b-2 border-black pb-3 mb-4 text-sm font-serif">Granted Doctors</h4>
                     <div className="space-y-4">
-                        {grantedDoctors.map(docWallet => {
+                        {grantedDoctors.map((docWallet, idx) => {
                             const doc = doctors.find(d => d.wallet_address === docWallet);
                             return (
-                                <div key={docWallet} className="flex items-center justify-between border-2 border-gray-200 hover:border-black p-3 bg-gray-50 transition-colors">
+                                <div key={`${docWallet}-${idx}`} className="flex items-center justify-between border-2 border-gray-200 hover:border-black p-3 bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className="text-2xl drop-shadow-sm">{SPECIALTY_ICONS[doc?.specialty || ''] || '🧑‍⚕️'}</div>
                                         <div>

@@ -9,8 +9,8 @@ export default function EditorialTopNav() {
   const { userId, authMethod } = useAuth();
 
   // Get user display info from Privy
-  const userEmail = user?.email?.address || user?.wallet?.address || '';
-  const userInitial = userEmail.charAt(0).toUpperCase() || 'U';
+  const userEmail = user?.email?.address || '';
+  const userInitial = userEmail.charAt(0).toUpperCase() || user?.wallet?.address?.slice(2, 3).toUpperCase() || 'U';
 
   return (
     <header className="flex justify-between items-center h-16 w-full pl-72 pr-8 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg shadow-sm dark:shadow-none fixed top-0">
@@ -58,9 +58,11 @@ export default function EditorialTopNav() {
 
         {/* User Info */}
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-900">
-            {userEmail}
-          </span>
+          {userEmail && (
+            <span className="text-sm font-semibold text-slate-900">
+              {userEmail}
+            </span>
+          )}
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-blue-600">
             {userInitial}
           </div>

@@ -177,8 +177,16 @@ export default function DoctorDashboard() {
             const { success, grants: accessData } = await getDoctorGrants(address);
 
             if (success && accessData && accessData.length > 0) {
-                setGrants(accessData);
-                if (accessData.length > 0) setSelectedGrant(accessData[0]);
+                // Deduplicate by id to prevent React key warnings
+                const seen = new Set<string>();
+                const unique = accessData.filter((g: GrantedRecord) => {
+                    const key = g.id || g.analysis_id || g.patient_wallet;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                setGrants(unique);
+                if (unique.length > 0) setSelectedGrant(unique[0]);
             } else {
                 setGrants([]);
                 setSelectedGrant(null);
@@ -396,9 +404,9 @@ export default function DoctorDashboard() {
                                         <p className="text-xs text-gray-500">Patients need to grant you access first.</p>
                                     </div>
                                 ) : (
-                                    grants.map(g => (
+                                    grants.map((g, gIdx) => (
                                         <div
-                                            key={g.id}
+                                            key={`${g.id}-${g.analysis_id || gIdx}`}
                                             onClick={() => setSelectedGrant(g)}
                                             className={`group relative cursor-pointer p-4 rounded-2xl transition-all border ${selectedGrant?.id === g.id
                                                 ? 'bg-blue-50 border-blue-200'
