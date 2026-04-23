@@ -1,16 +1,10 @@
-# 🏥 MediChain AI — Blockchain-Secured Medical Records Platform
+# MediChain AI — Blockchain-Secured Medical Records Platform
 
-> AI-powered medical analysis with blockchain-verified records, privacy-first architecture, and real-time doctor collaboration.
-
-[![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8-363636?logo=solidity)](https://soliditylang.org)
-[![Stellar](https://img.shields.io/badge/Stellar-Testnet-7B68EE?logo=stellar)](https://stellar.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+AI-powered medical analysis with blockchain-verified records, privacy-first architecture, and real-time doctor collaboration.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -22,7 +16,6 @@
 - [API Reference](#api-reference)
 - [Blockchain Integration](#blockchain-integration)
 - [AI Pipeline](#ai-pipeline)
-- [Contributing](#contributing)
 
 ---
 
@@ -41,39 +34,39 @@ MediChain AI is a full-stack medical records platform that combines:
 
 ## Features
 
-### 🤖 AI Analysis
+### AI Analysis
 - Upload medical reports (PDF, images, X-rays)
 - Local MedGemma 4B analysis — fully offline, zero API cost
 - Extracts: risk score, conditions, biomarkers, abnormal findings
 - Generates improvement plans and specialist recommendations
 
-### 🔗 Blockchain
-- Every analysis hashed and stored on **Stellar testnet**
-- Smart contracts on **Ethereum/Hardhat** for consent and payments
+### Blockchain
+- Every analysis hashed and stored on Stellar testnet
+- Smart contracts on Ethereum/Hardhat for consent and payments
 - Immutable audit trail for all record access
 
-### 🔐 Access Control
+### Access Control
 - Patients grant time-bound access to doctors (1h, 2h, 24h, custom)
 - Automatic expiry — access revoked without patient action
-- WhatsApp notification sent to doctor + admin on every grant
+- WhatsApp notification sent to doctor and admin on every grant
 
-### 💬 WhatsApp Integration
+### WhatsApp Integration
 - Patients can send medical reports via WhatsApp
 - AI analyzes and responds with risk assessment
 - Doctors notified instantly when records are shared
 
-### 👨‍⚕️ Doctor Dashboard
+### Doctor Dashboard
 - View all patient records shared with you
 - AI-powered consultation assistant
 - Appointment management
 - Consultation notes
 
-### 🧬 Digital Twin
+### Digital Twin
 - 3D body visualization with organ-level health status
 - Real-time risk indicators per organ system
 - Powered by Sketchfab 3D models
 
-### 🔒 Privacy Features
+### Privacy Features
 - AES-256 encryption for stored records
 - Fully Homomorphic Encryption (FHE) support
 - Zero-Knowledge Proofs for privacy-preserving verification
@@ -85,65 +78,65 @@ MediChain AI is a full-stack medical records platform that combines:
 ### Frontend
 | Technology | Purpose |
 |-----------|---------|
-| **Next.js 15** | React framework with App Router |
-| **TypeScript** | Type safety |
-| **Tailwind CSS 3.4** | Styling |
-| **Privy** | MPC wallet authentication |
-| **Sketchfab** | 3D Digital Twin rendering |
+| Next.js 15 | React framework with App Router |
+| TypeScript | Type safety |
+| Tailwind CSS 3.4 | Styling |
+| Privy | MPC wallet authentication |
+| Sketchfab | 3D Digital Twin rendering |
 
 ### Backend
 | Technology | Purpose |
 |-----------|---------|
-| **FastAPI** | Python REST API |
-| **Ollama + MedGemma 4B** | Local AI medical analysis |
-| **Twilio** | WhatsApp messaging |
-| **Pinata** | IPFS decentralized storage |
-| **Tavus** | AI doctor video avatar |
+| FastAPI | Python REST API |
+| Ollama + MedGemma 4B | Local AI medical analysis |
+| Twilio | WhatsApp messaging |
+| Pinata | IPFS decentralized storage |
+| Tavus | AI doctor video avatar |
 
 ### Blockchain
 | Technology | Purpose |
 |-----------|---------|
-| **Stellar Testnet** | Medical record proofs & payments |
-| **Ethereum / Hardhat** | Smart contracts (consent, tokens) |
-| **Solidity** | Smart contract language |
-| **stellar-sdk** | Python Stellar integration |
-| **ethers.js** | Ethereum frontend integration |
+| Stellar Testnet | Medical record proofs and payments |
+| Ethereum / Hardhat | Smart contracts (consent, tokens) |
+| Solidity | Smart contract language |
+| stellar-sdk | Python Stellar integration |
+| ethers.js | Ethereum frontend integration |
 
-### Database & Infrastructure
+### Database and Infrastructure
 | Technology | Purpose |
 |-----------|---------|
-| **InsForge (PostgreSQL)** | Primary database via PostgREST |
-| **InsForge MCP** | Database management tooling |
-| **IPFS / Pinata** | Decentralized file storage |
+| InsForge (PostgreSQL) | Primary database via PostgREST |
+| InsForge MCP | Database management tooling |
+| IPFS / Pinata | Decentralized file storage |
 
 ### AI Models
 | Model | Purpose |
 |-------|---------|
-| **MedGemma 4B (Ollama)** | Medical report analysis, X-ray interpretation |
-| **Bio_ClinicalBERT** | Clinical NLP |
-| **BioGPT** | Medical text generation |
+| MedGemma 4B (Ollama) | Medical report analysis, X-ray interpretation |
+| Bio_ClinicalBERT | Clinical NLP |
+| BioGPT | Medical text generation |
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Frontend (Next.js)                   │
-│  Patient Dashboard │ Doctor Dashboard │ Digital Twin     │
-└──────────────────────────┬──────────────────────────────┘
-                           │ REST API
-┌──────────────────────────▼──────────────────────────────┐
-│                   Backend (FastAPI)                      │
-│  /analyze  /records  /access-grants  /whatsapp           │
-│  /stellar  /appointments  /doctors  /profiles            │
-└────┬──────────────┬──────────────┬───────────────────────┘
-     │              │              │
-┌────▼────┐  ┌──────▼──────┐  ┌───▼──────────────────────┐
-│ Ollama  │  │  InsForge   │  │  Blockchain               │
-│MedGemma │  │ PostgreSQL  │  │  Stellar + Ethereum       │
-│  4B     │  │  (PostgREST)│  │  (Proofs + Payments)      │
-└─────────┘  └─────────────┘  └──────────────────────────┘
++----------------------------------------------------------+
+|                     Frontend (Next.js)                    |
+|  Patient Dashboard | Doctor Dashboard | Digital Twin      |
++---------------------------+------------------------------+
+                            | REST API
++---------------------------v------------------------------+
+|                   Backend (FastAPI)                       |
+|  /analyze  /records  /access-grants  /whatsapp            |
+|  /stellar  /appointments  /doctors  /profiles             |
++----+------------------+------------------+---------------+
+     |                  |                  |
++----v----+    +--------v--------+    +----v------------------+
+| Ollama  |    |   InsForge      |    |  Blockchain           |
+|MedGemma |    |  PostgreSQL     |    |  Stellar + Ethereum   |
+|  4B     |    |  (PostgREST)    |    |  (Proofs + Payments)  |
++---------+    +-----------------+    +-----------------------+
 ```
 
 ---
@@ -203,7 +196,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open http://localhost:3000
 
 ### 8. (Optional) Start blockchain node
 
@@ -234,7 +227,7 @@ Copy `.env.example` to `.env` and fill in your values.
 | `NEXT_PUBLIC_PRIVY_APP_ID` | Privy app ID | For auth |
 | `VAULT_MASTER_KEY` | 32-byte encryption key | For security |
 
-> ⚠️ **Never commit `.env` to git.** It is gitignored by default.
+Never commit `.env` to git. It is gitignored by default.
 
 ---
 
@@ -286,7 +279,7 @@ MedChain-BlockChain/
 │   └── scripts/                # Deployment scripts
 │
 ├── docs/                       # Documentation
-├── scripts/                    # Utility scripts (.bat)
+├── scripts/                    # Utility scripts
 ├── .env.example                # Environment template
 ├── .gitignore
 └── README.md
@@ -301,27 +294,27 @@ Base URL: `http://localhost:8000`
 ### Analysis
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/analyze-report` | Analyze medical report with AI |
-| `GET` | `/api/records/{wallet}` | Get patient records |
-| `DELETE` | `/api/records/{id}` | Delete a record |
+| POST | `/api/analyze-report` | Analyze medical report with AI |
+| GET | `/api/records/{wallet}` | Get patient records |
+| DELETE | `/api/records/{id}` | Delete a record |
 
 ### Access Control
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/access-grants/simple` | Grant doctor access |
-| `GET` | `/api/access-grants/check` | Check access status |
-| `POST` | `/api/access-grants/{id}/revoke` | Revoke access |
+| POST | `/api/access-grants/simple` | Grant doctor access |
+| GET | `/api/access-grants/check` | Check access status |
+| POST | `/api/access-grants/{id}/revoke` | Revoke access |
 
 ### Blockchain
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/stellar/store-proof` | Store proof on Stellar |
-| `GET` | `/api/stellar/account/{key}` | Get Stellar account info |
+| POST | `/api/stellar/store-proof` | Store proof on Stellar |
+| GET | `/api/stellar/account/{key}` | Get Stellar account info |
 
 ### WhatsApp
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/whatsapp/webhook` | Twilio webhook receiver |
+| POST | `/api/whatsapp/webhook` | Twilio webhook receiver |
 
 Full API docs available at `http://localhost:8000/docs` (Swagger UI)
 
@@ -333,7 +326,7 @@ Full API docs available at `http://localhost:8000/docs` (Swagger UI)
 - Every medical analysis generates a SHA-256 hash stored on Stellar
 - Gas wallet pays transaction fees
 - Data entries: `ipfs_<id>` and `risk_<id>` per record
-- View transactions: [Stellar Expert Testnet](https://stellar.expert/explorer/testnet)
+- View transactions: https://stellar.expert/explorer/testnet
 
 ### Ethereum Smart Contracts
 - `MediChainRecords.sol` — On-chain record registry
@@ -348,16 +341,21 @@ Full API docs available at `http://localhost:8000/docs` (Swagger UI)
 
 ```
 Upload Report (PDF/Image)
-        ↓
+        |
+        v
 OCR Extraction (PyMuPDF / Tesseract)
-        ↓
+        |
+        v
 MedGemma 4B Analysis (Ollama local)
-        ↓
+        |
+        v
 Extract: risk_score, conditions, biomarkers, urgency
-        ↓
+        |
+        v
 Build Summary + Improvement Plan
-        ↓
-SHA-256 Hash → Store in DB + Stellar blockchain
+        |
+        v
+SHA-256 Hash -> Store in DB + Stellar blockchain
 ```
 
 ---
@@ -367,23 +365,13 @@ SHA-256 Hash → Store in DB + Stellar blockchain
 1. Patient sends report image to Twilio sandbox number
 2. Backend receives webhook, runs MedGemma analysis
 3. Responds with risk score and recommendations
-4. When patient grants doctor access → WhatsApp alert sent to doctor + admin
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'Add your feature'`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request
+4. When patient grants doctor access, WhatsApp alert sent to doctor and admin
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License
 
 ---
 
@@ -396,7 +384,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 - [Privy](https://privy.io) — MPC wallet authentication
 - [Twilio](https://twilio.com) — WhatsApp messaging
 - [Tavus](https://tavus.io) — AI video avatars
-
----
-
-*Built for the future of decentralized healthcare.*
